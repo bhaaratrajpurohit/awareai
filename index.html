@@ -11,13 +11,6 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;500&family=Inter:wght@300;400;500;600;700&family=Orbitron:wght@400;500;600;700;900&display=swap" rel="stylesheet">
 
-    <!-- React & ReactDOM -->
-    <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
-    <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
-    
-    <!-- Babel for JSX -->
-    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
-
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
     <script>
@@ -78,20 +71,9 @@
         }
     </script>
 
-    <!-- Import Map for ES Modules -->
-    <script type="importmap">
-    {
-        "imports": {
-            "@google/genai": "https://esm.run/@google/genai",
-            "lucide-react": "https://esm.run/lucide-react",
-            "recharts": "https://esm.run/recharts",
-            "clsx": "https://esm.run/clsx"
-        }
-    }
-    </script>
-
+    <!-- Styles -->
     <style>
-        body { background-color: #0f172a; color: #f8fafc; overflow-x: hidden; }
+        body { background-color: #0f172a; color: #f8fafc; overflow-x: hidden; margin: 0; font-family: 'Inter', sans-serif; }
         .glass-card {
             background: rgba(30, 41, 59, 0.4);
             backdrop-filter: blur(12px);
@@ -139,20 +121,48 @@
         ::-webkit-scrollbar-thumb { background: #334155; border-radius: 4px; }
         ::-webkit-scrollbar-thumb:hover { background: #475569; }
     </style>
+
+    <!-- React & Babel -->
+    <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+    <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+
+    <!-- Libraries UMD -->
+    <script src="https://unpkg.com/prop-types/prop-types.min.js"></script>
+    <script src="https://unpkg.com/recharts/umd/Recharts.js"></script>
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <script src="https://unpkg.com/lucide-react@latest/dist/lucide-react.umd.js"></script>
+    <script src="https://unpkg.com/clsx@latest/dist/clsx.min.js"></script>
+
+    <!-- Import Map for Google GenAI (ESM Only) -->
+    <script type="importmap">
+    {
+      "imports": {
+        "@google/genai": "https://esm.run/@google/genai"
+      }
+    }
+    </script>
 </head>
 <body>
     <div id="root"></div>
 
+    <!-- Main Application Script -->
     <script type="text/babel" data-type="module">
         import { GoogleGenAI } from "@google/genai";
-        import * as Lucide from "lucide-react";
-        import * as Recharts from "recharts";
-        import { clsx } from "clsx";
+        
+        // --- GLOBALS FROM UMD ---
+        // React, ReactDOM, Recharts, LucideReact, clsx are available globally
+        const { useState, useEffect, useRef, useLayoutEffect } = React;
+        const { PieChart, Pie, Cell, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, LineChart, Line } = Recharts;
+        const { clsx } = window; 
+        const { 
+            Shield, Menu, X, ArrowRight, ShieldCheck, Zap, Lock, 
+            AlertTriangle, CheckCircle, AlertCircle, ThumbsUp, ThumbsDown, 
+            RefreshCw, XCircle, Activity, Globe, ShieldAlert, MessageSquare, 
+            Cpu, Database, ChevronDown, ChevronUp, Search 
+        } = LucideReact;
 
-        // ----------------------------------------------------------------------
-        // 1. CONFIG & CONSTANTS
-        // ----------------------------------------------------------------------
-        const APP_NAME = "AWARE AI";
+        // --- CONFIG & CONSTANTS ---
         const SAMPLE_MESSAGES = {
             KSEB: "പ്രിയ ഉപഭോക്താവേ, നിങ്ങളുടെ KSEB ബിൽ കുടിശ്ശിക ₹2,450 ഉണ്ട്. ഇന്ന് രാത്രി 9 മണിക്ക് കണക്ഷൻ വിച്ഛേദിക്കും. ഉടൻ അടയ്ക്കാൻ ഈ ആപ്പ് ഡൗൺലോഡ് ചെയ്യുക: http://kseb-bill-pay.tk/urgent",
             LOTTERY: "Congratulations! Ningalude mobile number 98XXXX5678 KBC lottery il select aayi. 25 lakh rupees jedhichu. Claim cheyan ee link click cheyyuka within 24 hours: bit.ly/kbc-winner-claim. Processing fee Rs.500 Google Pay cheyyuka: 9876543210",
@@ -165,11 +175,8 @@
             LOTTERY: "http://kbc-lottery-claim.ga/winner/congratulations"
         };
 
-        // ----------------------------------------------------------------------
-        // 2. SERVICES (Gemini AI Logic)
-        // ----------------------------------------------------------------------
-        // Replace with your actual key or use this placeholder for demo if valid
-        const apiKey = 'AIzaSyAc1d-3l1cc_lyQFZS4ocF4DJrozlrKlXE'; 
+        // --- AI SERVICE ---
+        const apiKey = 'AIzaSyAc1d-3l1cc_lyQFZS4ocF4DJrozlrKlXE';
         const ai = new GoogleGenAI({ apiKey });
 
         const SYSTEM_LOGIC = `
@@ -227,11 +234,12 @@
                     }
                 });
                 const result = JSON.parse(response.text);
-                // Safety defaults for arrays/objects
-                result.redFlags = result.redFlags || [];
-                result.actionableAdvice = result.actionableAdvice || [];
-                result.detailedAnalysis = result.detailedAnalysis || {};
-                return result;
+                return {
+                    ...result,
+                    redFlags: result.redFlags || [],
+                    actionableAdvice: result.actionableAdvice || [],
+                    detailedAnalysis: result.detailedAnalysis || { malayalam: "N/A", manglish: "N/A", english: "N/A" }
+                };
             } catch (error) {
                 console.error(error);
                 return {
@@ -284,11 +292,12 @@
                     }
                 });
                 const result = JSON.parse(response.text);
-                // Safety defaults
-                result.findings = result.findings || [];
-                result.threatIndicators = result.threatIndicators || [];
-                result.actionableAdvice = result.actionableAdvice || [];
-                return result;
+                return {
+                    ...result,
+                    findings: result.findings || [],
+                    threatIndicators: result.threatIndicators || [],
+                    actionableAdvice: result.actionableAdvice || []
+                };
             } catch (error) {
                 console.error(error);
                 return {
@@ -302,67 +311,62 @@
             }
         }
 
-        // ----------------------------------------------------------------------
-        // 3. COMPONENTS
-        // ----------------------------------------------------------------------
+        // --- COMPONENTS ---
 
-        // Futuristic Background
-        const FuturisticBackground = () => {
-            return (
-                <div className="fixed inset-0 z-0 overflow-hidden pointer-events-none bg-brand-navy">
-                    <div className="absolute inset-0 bg-gradient-to-b from-[#020617] via-[#0f172a] to-[#1e293b]" />
-                    <div className="absolute inset-0 opacity-20" style={{
-                        backgroundImage: 'linear-gradient(rgba(59, 130, 246, 0.4) 1px, transparent 1px), linear-gradient(90deg, rgba(59, 130, 246, 0.4) 1px, transparent 1px)',
-                        backgroundSize: '40px 40px',
-                        width: '200vw', height: '200vh', left: '-50%', top: '-50%',
-                        transform: 'perspective(500px) rotateX(60deg)', animation: 'gridFlow 20s linear infinite'
-                    }} />
-                    <div className="absolute top-0 left-0 right-0 h-1/2 bg-gradient-to-b from-[#020617] to-transparent z-10" />
-                    <div className="absolute bottom-0 left-0 right-0 h-1/3 bg-gradient-to-t from-[#0f172a] via-[#0f172a]/80 to-transparent z-10" />
-                    <div className="absolute top-[20%] left-[20%] w-[600px] h-[600px] rounded-full bg-brand-primary opacity-[0.04] blur-[120px] animate-pulse-slow" />
-                </div>
-            );
-        };
+        const FuturisticBackground = () => (
+            <div className="fixed inset-0 z-0 overflow-hidden pointer-events-none bg-brand-navy">
+                <div className="absolute inset-0 bg-gradient-to-b from-[#020617] via-[#0f172a] to-[#1e293b]" />
+                <div className="absolute inset-0 opacity-20" style={{
+                    backgroundImage: 'linear-gradient(rgba(59, 130, 246, 0.4) 1px, transparent 1px), linear-gradient(90deg, rgba(59, 130, 246, 0.4) 1px, transparent 1px)',
+                    backgroundSize: '40px 40px',
+                    width: '200vw', height: '200vh', left: '-50%', top: '-50%',
+                    transform: 'perspective(500px) rotateX(60deg)', animation: 'gridFlow 20s linear infinite'
+                }} />
+                <div className="absolute top-0 left-0 right-0 h-1/2 bg-gradient-to-b from-[#020617] to-transparent z-10" />
+                <div className="absolute bottom-0 left-0 right-0 h-1/3 bg-gradient-to-t from-[#0f172a] via-[#0f172a]/80 to-transparent z-10" />
+                <div className="absolute top-[20%] left-[20%] w-[600px] h-[600px] rounded-full bg-brand-primary opacity-[0.04] blur-[120px] animate-pulse-slow" />
+            </div>
+        );
 
-        // Ripple Button
-        const RippleButton = ({ children, className, variant = 'primary', onClick, disabled, ...props }) => {
-            const [ripples, setRipples] = React.useState([]);
+        const RippleButton = ({ children, className, variant = 'primary', onClick, disabled }) => {
+            const [ripples, setRipples] = useState([]);
             const addRipple = (e) => {
                 const button = e.currentTarget;
                 const rect = button.getBoundingClientRect();
                 const size = Math.max(rect.width, rect.height);
                 const x = e.clientX - rect.left - size / 2;
                 const y = e.clientY - rect.top - size / 2;
-                const newRipple = { x, y, size, id: Date.now() };
-                setRipples((prev) => [...prev, newRipple]);
+                setRipples(prev => [...prev, { x, y, size, id: Date.now() }]);
                 if (onClick) onClick(e);
             };
-            React.useLayoutEffect(() => {
+            useLayoutEffect(() => {
                 if (ripples.length > 0) {
-                    const timer = setTimeout(() => setRipples((prev) => prev.slice(1)), 600);
+                    const timer = setTimeout(() => setRipples(prev => prev.slice(1)), 600);
                     return () => clearTimeout(timer);
                 }
             }, [ripples]);
             
-            const baseStyles = "relative overflow-hidden font-inter font-semibold transition-all duration-300 transform active:scale-[0.98] disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2";
-            const variants = {
+            const base = "relative overflow-hidden font-inter font-semibold transition-all duration-300 transform active:scale-[0.98] disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2";
+            const vars = {
                 primary: "bg-brand-primary text-white hover:bg-blue-600 shadow-lg shadow-brand-primary/20 hover:shadow-brand-primary/40",
                 secondary: "bg-white/10 text-white hover:bg-white/20 border border-white/10",
                 ghost: "bg-transparent text-gray-400 hover:text-white hover:bg-white/5"
             };
             return (
-                <button className={clsx(baseStyles, variants[variant], className)} onClick={addRipple} disabled={disabled} {...props}>
-                    {ripples.map((r) => (
-                        <span key={r.id} className="absolute bg-white/30 rounded-full animate-ripple pointer-events-none" style={{ top: r.y, left: r.x, width: r.size, height: r.size }} />
-                    ))}
+                <button className={clsx(base, vars[variant], className)} onClick={addRipple} disabled={disabled}>
+                    {ripples.map(r => <span key={r.id} className="absolute bg-white/30 rounded-full animate-ripple pointer-events-none" style={{top: r.y, left: r.x, width: r.size, height: r.size}} />)}
                     <span className="relative z-10 flex items-center gap-2">{children}</span>
                 </button>
             );
         };
 
-        // Header
+        // Simple Router Implementation since we removed react-router-dom UMD dependency for simplicity
+        const Link = ({ to, children, className }) => {
+            return <a href={`#${to}`} className={className}>{children}</a>;
+        };
+
         const Header = ({ currentPage, setCurrentPage }) => {
-            const [isMenuOpen, setIsMenuOpen] = React.useState(false);
+            const [isMenuOpen, setIsMenuOpen] = useState(false);
             const navLinks = [
                 { name: 'Home', id: 'home' },
                 { name: 'Message Scan', id: 'message-scan' },
@@ -374,7 +378,7 @@
                 <header className="sticky top-0 h-[70px] bg-brand-navy/90 backdrop-blur-md border-b border-white/5 z-50">
                     <div className="container mx-auto h-full px-6 flex items-center justify-between">
                         <div onClick={() => setCurrentPage('home')} className="flex items-center gap-3 cursor-pointer group">
-                            <Lucide.Shield className="w-7 h-7 text-brand-primary group-hover:scale-105 transition-transform" />
+                            <Shield className="w-7 h-7 text-brand-primary group-hover:scale-105 transition-transform" />
                             <span className="font-orbitron text-xl font-bold text-gray-100 tracking-wide group-hover:text-white">AWARE AI</span>
                         </div>
                         <nav className="hidden md:flex items-center gap-8">
@@ -385,7 +389,7 @@
                             ))}
                         </nav>
                         <button className="md:hidden text-gray-400 hover:text-white" onClick={() => setIsMenuOpen(!isMenuOpen)}>
-                            {isMenuOpen ? <Lucide.X size={24} /> : <Lucide.Menu size={24} />}
+                            {isMenuOpen ? <X size={24} /> : <Menu size={24} />}
                         </button>
                     </div>
                     {isMenuOpen && (
@@ -401,14 +405,13 @@
             );
         };
 
-        // Footer
         const Footer = ({ setCurrentPage }) => (
             <footer className="bg-neutral-offWhite border-t border-neutral-lightGreen pt-16 pb-8 mt-20 relative z-10">
                 <div className="container mx-auto px-6 text-center md:text-left">
                     <div className="grid grid-cols-1 md:grid-cols-3 gap-12 mb-12">
                         <div>
                             <div className="flex items-center gap-2 justify-center md:justify-start mb-4">
-                                <Lucide.Shield className="text-brand-primary" size={24} />
+                                <Shield className="text-brand-primary" size={24} />
                                 <span className="font-orbitron text-xl font-bold text-white">AWARE AI</span>
                             </div>
                             <p className="text-gray-400 text-sm">Kerala's Digital Scam Protection Platform.</p>
@@ -434,18 +437,15 @@
             </footer>
         );
 
-        // ----------------------------------------------------------------------
-        // 4. PAGES
-        // ----------------------------------------------------------------------
+        // --- PAGES ---
 
-        // Home Page
         const Home = ({ setCurrentPage }) => {
-            const [text, setText] = React.useState('');
-            const [loopNum, setLoopNum] = React.useState(0);
-            const [isDeleting, setIsDeleting] = React.useState(false);
+            const [text, setText] = useState('');
+            const [loopNum, setLoopNum] = useState(0);
+            const [isDeleting, setIsDeleting] = useState(false);
             const messages = ["Protect Your Privacy", "AI-Powered Scam Detection", "Stay Safe Online"];
             
-            React.useEffect(() => {
+            useEffect(() => {
                 const handleTyping = () => {
                     const i = loopNum % messages.length;
                     const fullText = messages[i];
@@ -469,16 +469,16 @@
                             <div className="h-12 md:h-16 mb-8 flex items-center justify-center"><p className="font-inter text-xl md:text-2xl text-transparent bg-clip-text bg-gradient-to-r from-gray-100 to-gray-400 font-light tracking-wide border-r-2 border-brand-accent pr-1 animate-pulse">{text}</p></div>
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-8 max-w-4xl mx-auto mt-12">
                                 <div onClick={() => setCurrentPage('message-scan')} className="glass-card p-10 cursor-pointer hover:-translate-y-2 group relative overflow-hidden border-white/5 hover:border-brand-primary/40">
-                                    <div className="mb-8 relative z-10 p-5 bg-brand-navy rounded-2xl border border-white/10 shadow-xl"><span className="text-4xl">📱</span></div>
+                                    <div className="mb-8 relative z-10 p-5 bg-brand-navy rounded-2xl border border-white/10 shadow-xl inline-block"><span className="text-4xl">📱</span></div>
                                     <h2 className="font-orbitron text-2xl font-bold text-white mb-4 group-hover:text-brand-primary transition-colors">MESSAGE SCANNER</h2>
                                     <p className="font-inter text-gray-400 text-sm mb-10">Detect scam SMS & WhatsApp messages.</p>
-                                    <RippleButton className="w-full py-3.5 rounded-full bg-white/5 border border-white/10 hover:bg-brand-primary">Scan Message <Lucide.ArrowRight size={16} /></RippleButton>
+                                    <RippleButton className="w-full py-3.5 rounded-full bg-white/5 border border-white/10 hover:bg-brand-primary">Scan Message <ArrowRight size={16} /></RippleButton>
                                 </div>
                                 <div onClick={() => setCurrentPage('url-scan')} className="glass-card p-10 cursor-pointer hover:-translate-y-2 group relative overflow-hidden border-white/5 hover:border-brand-accent/40">
-                                    <div className="mb-8 relative z-10 p-5 bg-brand-navy rounded-2xl border border-white/10 shadow-xl"><span className="text-4xl">🔗</span></div>
+                                    <div className="mb-8 relative z-10 p-5 bg-brand-navy rounded-2xl border border-white/10 shadow-xl inline-block"><span className="text-4xl">🔗</span></div>
                                     <h2 className="font-orbitron text-2xl font-bold text-white mb-4 group-hover:text-brand-accent transition-colors">URL SCANNER</h2>
                                     <p className="font-inter text-gray-400 text-sm mb-10">Check suspicious links & websites.</p>
-                                    <RippleButton className="w-full py-3.5 rounded-full bg-white/5 border border-white/10 hover:bg-brand-accent">Scan URL <Lucide.ArrowRight size={16} /></RippleButton>
+                                    <RippleButton className="w-full py-3.5 rounded-full bg-white/5 border border-white/10 hover:bg-brand-accent">Scan URL <ArrowRight size={16} /></RippleButton>
                                 </div>
                             </div>
                         </div>
@@ -487,13 +487,12 @@
             );
         };
 
-        // Message Scanner
         const MessageScanner = () => {
-            const [text, setText] = React.useState('');
-            const [loading, setLoading] = React.useState(false);
-            const [result, setResult] = React.useState(null);
-            const [error, setError] = React.useState(null);
-            const resultsRef = React.useRef(null);
+            const [text, setText] = useState('');
+            const [loading, setLoading] = useState(false);
+            const [result, setResult] = useState(null);
+            const [error, setError] = useState(null);
+            const resultsRef = useRef(null);
 
             const handleScan = async () => {
                 if (!text.trim() || text.length < 10) { setError("Please enter a valid message."); return; }
@@ -513,7 +512,7 @@
                         <div className="relative group rounded-xl mt-6">
                             <textarea value={text} onChange={(e) => setText(e.target.value)} placeholder=" " className="glass-input w-full h-48 rounded-xl p-6 text-white font-inter resize-none text-base peer pt-6" />
                             <label className="glass-label absolute left-6 top-6 text-gray-500 z-20">Paste suspicious content here...</label>
-                            {text && <button onClick={() => setText('')} className="absolute top-4 right-4 text-gray-500"><Lucide.XCircle size={18} /></button>}
+                            {text && <button onClick={() => setText('')} className="absolute top-4 right-4 text-gray-500"><XCircle size={18} /></button>}
                             {loading && <div className="absolute inset-0 z-10 bg-brand-navy/50 backdrop-blur-[2px] flex items-center justify-center"><span className="font-orbitron font-bold text-white animate-pulse">ANALYZING...</span></div>}
                         </div>
                         {error && <div className="text-status-danger text-sm mt-2 text-center">{error}</div>}
@@ -529,7 +528,7 @@
                     {result && (
                         <div ref={resultsRef} className="space-y-6 animate-slide-up">
                             <div className={clsx("glass-card p-8 text-center border-l-4 shadow-xl relative overflow-hidden", result.verdict === 'SAFE' ? 'text-status-success border-status-success' : result.verdict === 'DANGEROUS' ? 'text-status-danger border-status-danger' : 'text-status-warning border-status-warning')}>
-                                <Lucide.ShieldCheck size={64} className="mb-4 mx-auto" />
+                                <ShieldCheck size={64} className="mb-4 mx-auto" />
                                 <h2 className="font-orbitron text-4xl font-bold mb-2 text-white">{result.verdict}</h2>
                                 <div className="text-white font-mono">Confidence: {result.confidence}%</div>
                             </div>
@@ -550,12 +549,11 @@
             );
         };
 
-        // URL Scanner
         const UrlScanner = () => {
-            const [url, setUrl] = React.useState('');
-            const [loading, setLoading] = React.useState(false);
-            const [result, setResult] = React.useState(null);
-            const resultsRef = React.useRef(null);
+            const [url, setUrl] = useState('');
+            const [loading, setLoading] = useState(false);
+            const [result, setResult] = useState(null);
+            const resultsRef = useRef(null);
 
             const handleScan = async () => {
                 if (!url.trim()) return;
@@ -572,7 +570,7 @@
                     </div>
                     <div className="glass-card p-8 mb-10 animate-fade-in">
                         <div className="relative mt-8 mb-8 group rounded-xl">
-                            <Lucide.Globe className="absolute left-4 top-1/2 -translate-y-1/2 text-brand-accent" size={20} />
+                            <Globe className="absolute left-4 top-1/2 -translate-y-1/2 text-brand-accent" size={20} />
                             <input value={url} onChange={(e) => setUrl(e.target.value)} placeholder=" " className="glass-input w-full rounded-xl py-4 pl-12 pr-12 text-white font-mono text-base" />
                             <label className="glass-label absolute left-12 top-4 text-gray-500">Enter URL...</label>
                         </div>
@@ -585,7 +583,7 @@
                     </div>
                     {result && (
                         <div ref={resultsRef} className="glass-card p-8 animate-slide-up">
-                            <h2 className="font-orbitron text-xl text-gray-300 mb-6 flex items-center justify-center gap-2"><Lucide.ShieldAlert size={20} /> Analysis</h2>
+                            <h2 className="font-orbitron text-xl text-gray-300 mb-6 flex items-center justify-center gap-2"><ShieldAlert size={20} /> Analysis</h2>
                             <div className="text-center mb-6">
                                 <div className={clsx("font-orbitron text-4xl font-bold mb-3", result.verdict === 'SAFE' ? 'text-status-success' : 'text-status-danger')}>{result.verdict}</div>
                                 <p className="text-gray-400 text-sm">{result.summary}</p>
@@ -596,14 +594,13 @@
             );
         };
 
-        // Stats Page
         const Stats = () => (
             <div className="container mx-auto px-4 py-12">
                 <div className="text-center mb-12 animate-fade-in"><h1 className="font-orbitron text-4xl font-bold text-white">LIVE STATISTICS</h1></div>
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-12">
                     {[
-                        { label: 'Total Scans', value: '15,234', icon: Lucide.Activity, color: 'text-brand-primary' },
-                        { label: 'Threats Blocked', value: '3,456', icon: Lucide.Shield, color: 'text-status-danger' }
+                        { label: 'Total Scans', value: '15,234', icon: Activity, color: 'text-brand-primary' },
+                        { label: 'Threats Blocked', value: '3,456', icon: Shield, color: 'text-status-danger' }
                     ].map((stat, idx) => (
                         <div key={idx} className="glass-card p-6 flex flex-col items-center justify-center text-center">
                             <div className="p-4 rounded-full mb-4 bg-white/5"><stat.icon className={`w-8 h-8 ${stat.color}`} /></div>
@@ -614,19 +611,18 @@
                 </div>
                 <div className="glass-card p-6 h-[300px]">
                     <h3 className="font-orbitron text-sm font-bold text-white mb-6">THREAT LEVELS</h3>
-                    <Recharts.ResponsiveContainer width="100%" height="100%">
-                        <Recharts.BarChart data={[{ name: 'Danger', value: 2345 }, { name: 'Caution', value: 1234 }, { name: 'Safe', value: 6543 }]}>
-                            <Recharts.XAxis dataKey="name" stroke="#BDBDBD" />
-                            <Recharts.YAxis stroke="#BDBDBD" />
-                            <Recharts.Tooltip contentStyle={{ backgroundColor: '#1e293b', border: 'none' }} />
-                            <Recharts.Bar dataKey="value" fill="#3b82f6" />
-                        </Recharts.BarChart>
-                    </Recharts.ResponsiveContainer>
+                    <ResponsiveContainer width="100%" height="100%">
+                        <BarChart data={[{ name: 'Danger', value: 2345 }, { name: 'Caution', value: 1234 }, { name: 'Safe', value: 6543 }]}>
+                            <XAxis dataKey="name" stroke="#BDBDBD" />
+                            <YAxis stroke="#BDBDBD" />
+                            <Tooltip contentStyle={{ backgroundColor: '#1e293b', border: 'none' }} />
+                            <Bar dataKey="value" fill="#3b82f6" />
+                        </BarChart>
+                    </ResponsiveContainer>
                 </div>
             </div>
         );
 
-        // About Page
         const About = () => (
             <div className="container mx-auto px-4 py-12 max-w-4xl animate-fade-in">
                 <div className="glass-card p-10 mb-8">
@@ -640,11 +636,8 @@
             </div>
         );
 
-        // ----------------------------------------------------------------------
-        // 5. MAIN APP COMPONENT
-        // ----------------------------------------------------------------------
         const App = () => {
-            const [currentPage, setCurrentPage] = React.useState('home');
+            const [currentPage, setCurrentPage] = useState('home');
 
             const renderPage = () => {
                 switch (currentPage) {
@@ -653,7 +646,7 @@
                     case 'url-scan': return <UrlScanner />;
                     case 'stats': return <Stats />;
                     case 'about': return <About />;
-                    case 'faq': return <div className="container mx-auto px-4 py-12 text-center text-white">Coming Soon</div>; // Fallback
+                    case 'faq': return <div className="container mx-auto px-4 py-12 text-center text-white">Coming Soon</div>;
                     default: return <Home setCurrentPage={setCurrentPage} />;
                 }
             };

@@ -1,0 +1,675 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Aware AI | Kerala Scam Protection</title>
+    <link rel="icon" type="image/svg+xml" href="https://api.iconify.design/lucide:shield.svg?color=%233B82F6" />
+
+    <!-- Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;500&family=Inter:wght@300;400;500;600;700&family=Orbitron:wght@400;500;600;700;900&display=swap" rel="stylesheet">
+
+    <!-- React & ReactDOM -->
+    <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+    <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+    
+    <!-- Babel for JSX -->
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: {
+                        brand: {
+                            navy: '#0f172a',
+                            slate: '#1e293b',
+                            primary: '#3b82f6',
+                            accent: '#06b6d4',
+                        },
+                        status: {
+                            success: '#10b981',
+                            warning: '#f59e0b',
+                            danger: '#ef4444',
+                            info: '#3b82f6',
+                        },
+                        glass: {
+                            surface: 'rgba(255, 255, 255, 0.03)',
+                            border: 'rgba(255, 255, 255, 0.08)',
+                            highlight: 'rgba(255, 255, 255, 0.1)',
+                        }
+                    },
+                    fontFamily: {
+                        orbitron: ['Orbitron', 'sans-serif'],
+                        inter: ['Inter', 'sans-serif'],
+                        mono: ['Fira Code', 'monospace'],
+                    },
+                    animation: {
+                        'fade-in': 'fadeIn 0.6s ease-out forwards',
+                        'slide-up': 'slideUp 0.8s cubic-bezier(0.16, 1, 0.3, 1) forwards',
+                        'slide-in-down': 'slideInDown 0.3s ease-out forwards',
+                        'float': 'float 6s ease-in-out infinite',
+                        'pulse-slow': 'pulseSlow 4s infinite ease-in-out',
+                        'scan-vertical': 'scanVertical 2s linear infinite',
+                        'scan-horizontal': 'scanHorizontal 2s linear infinite',
+                        'shake': 'shake 0.4s cubic-bezier(.36,.07,.19,.97) both',
+                        'ripple': 'ripple 0.6s linear forwards',
+                        'grid-flow': 'gridFlow 20s linear infinite',
+                    },
+                    keyframes: {
+                        fadeIn: { '0%': { opacity: '0' }, '100%': { opacity: '1' } },
+                        slideUp: { '0%': { opacity: '0', transform: 'translateY(20px)' }, '100%': { opacity: '1', transform: 'translateY(0)' } },
+                        slideInDown: { '0%': { opacity: '0', transform: 'translateY(-10px)' }, '100%': { opacity: '1', transform: 'translateY(0)' } },
+                        float: { '0%, 100%': { transform: 'translateY(0)' }, '50%': { transform: 'translateY(-10px)' } },
+                        pulseSlow: { '0%, 100%': { opacity: '0.3', transform: 'scale(1)' }, '50%': { opacity: '0.6', transform: 'scale(1.02)' } },
+                        scanVertical: { '0%': { top: '-10%', opacity: '0' }, '50%': { opacity: '0.5' }, '100%': { top: '110%', opacity: '0' } },
+                        scanHorizontal: { '0%': { left: '-10%', opacity: '0' }, '50%': { opacity: '0.5' }, '100%': { left: '110%', opacity: '0' } },
+                        shake: { '10%, 90%': { transform: 'translate3d(-1px, 0, 0)' }, '20%, 80%': { transform: 'translate3d(2px, 0, 0)' }, '30%, 50%, 70%': { transform: 'translate3d(-2px, 0, 0)' }, '40%, 60%': { transform: 'translate3d(2px, 0, 0)' } },
+                        ripple: { '0%': { transform: 'scale(0)', opacity: '0.5' }, '100%': { transform: 'scale(4)', opacity: '0' } },
+                        gridFlow: { '0%': { backgroundPosition: '0 0' }, '100%': { backgroundPosition: '0 40px' } }
+                    }
+                }
+            }
+        }
+    </script>
+
+    <!-- Import Map for ES Modules -->
+    <script type="importmap">
+    {
+        "imports": {
+            "@google/genai": "https://esm.run/@google/genai",
+            "lucide-react": "https://esm.run/lucide-react",
+            "recharts": "https://esm.run/recharts",
+            "clsx": "https://esm.run/clsx"
+        }
+    }
+    </script>
+
+    <style>
+        body { background-color: #0f172a; color: #f8fafc; overflow-x: hidden; }
+        .glass-card {
+            background: rgba(30, 41, 59, 0.4);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            border-radius: 16px;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+            transition: transform 0.3s ease, box-shadow 0.3s ease, background 0.3s ease;
+        }
+        .glass-card:hover { background: rgba(30, 41, 59, 0.6); border-color: rgba(255, 255, 255, 0.1); }
+        .glass-input {
+            background: rgba(15, 23, 42, 0.6);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            color: #f8fafc;
+            transition: all 0.3s ease;
+        }
+        .glass-input:focus {
+            background: rgba(15, 23, 42, 0.8);
+            border-color: #3b82f6;
+            box-shadow: 0 0 0 4px rgba(59, 130, 246, 0.1);
+            outline: none;
+        }
+        .glass-input::placeholder { color: transparent; }
+        .glass-label {
+            position: absolute;
+            left: 1rem;
+            top: 1rem;
+            color: #94a3b8;
+            font-size: 1rem;
+            pointer-events: none;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            transform-origin: left top;
+        }
+        .glass-input:focus + .glass-label,
+        .glass-input:not(:placeholder-shown) + .glass-label {
+            transform: translateY(-2.2rem) scale(0.85);
+            color: #3b82f6;
+            font-weight: 600;
+            letter-spacing: 0.05em;
+        }
+        .glass-input.error:focus + .glass-label,
+        .glass-input.error:not(:placeholder-shown) + .glass-label { color: #ef4444; }
+        ::-webkit-scrollbar { width: 8px; }
+        ::-webkit-scrollbar-track { background: #0f172a; }
+        ::-webkit-scrollbar-thumb { background: #334155; border-radius: 4px; }
+        ::-webkit-scrollbar-thumb:hover { background: #475569; }
+    </style>
+</head>
+<body>
+    <div id="root"></div>
+
+    <script type="text/babel" data-type="module">
+        import { GoogleGenAI } from "@google/genai";
+        import * as Lucide from "lucide-react";
+        import * as Recharts from "recharts";
+        import { clsx } from "clsx";
+
+        // ----------------------------------------------------------------------
+        // 1. CONFIG & CONSTANTS
+        // ----------------------------------------------------------------------
+        const APP_NAME = "AWARE AI";
+        const SAMPLE_MESSAGES = {
+            KSEB: "പ്രിയ ഉപഭോക്താവേ, നിങ്ങളുടെ KSEB ബിൽ കുടിശ്ശിക ₹2,450 ഉണ്ട്. ഇന്ന് രാത്രി 9 മണിക്ക് കണക്ഷൻ വിച്ഛേദിക്കും. ഉടൻ അടയ്ക്കാൻ ഈ ആപ്പ് ഡൗൺലോഡ് ചെയ്യുക: http://kseb-bill-pay.tk/urgent",
+            LOTTERY: "Congratulations! Ningalude mobile number 98XXXX5678 KBC lottery il select aayi. 25 lakh rupees jedhichu. Claim cheyan ee link click cheyyuka within 24 hours: bit.ly/kbc-winner-claim. Processing fee Rs.500 Google Pay cheyyuka: 9876543210",
+            BANK: "Dear Customer, Your SBI YONO Account (A/C XXXX4532) will be BLOCKED today due to pending KYC update. Immediately update your PAN card details to avoid permanent closure. Click here: http://sbi-kyc-update.ml/verify?id=8374629",
+            SAFE: "Hi! How are you doing? Let's meet for coffee tomorrow at the usual place around 5 PM. Let me know if you're free!"
+        };
+        const SAMPLE_URLS = {
+            BANK: "http://sbi-kyc-update.ml/verify?user=837462",
+            DELIVERY: "https://india-post-delivery.tk/track/parcel-id-8374",
+            LOTTERY: "http://kbc-lottery-claim.ga/winner/congratulations"
+        };
+
+        // ----------------------------------------------------------------------
+        // 2. SERVICES (Gemini AI Logic)
+        // ----------------------------------------------------------------------
+        // Replace with your actual key or use this placeholder for demo if valid
+        const apiKey = 'AIzaSyAc1d-3l1cc_lyQFZS4ocF4DJrozlrKlXE'; 
+        const ai = new GoogleGenAI({ apiKey });
+
+        const SYSTEM_LOGIC = `
+        ## ANALYSIS RULES (Follow order)
+        ### RULE 1: Check if LEGITIMATE first
+        Message is **SAFE** if: Official bank/utility sender (HDFCBK, KSEB) + details + helpline. Score: **25-28**.
+        ### RULE 2: Check CRITICAL threats
+        **DANGEROUS**: ATM PIN/Digital Arrest/Visible OTP share (Score: **93-99**).
+        ### RULE 3: Check HIGH threats
+        **DANGEROUS**: Fake Refund/KYC/Police (Score: **86-89**).
+        ### RULE 4: Check MEDIUM threats
+        **CAUTION**: Fake Prize/Loan/Investment (Score: **73-81**).
+        ### RULE 5: Default
+        **CAUTION** (Score: **61**).
+        `;
+
+        async function analyzeMessage(text) {
+            try {
+                const model = "gemini-2.5-flash";
+                const prompt = `
+                  You are AWARE AI. Analyze this message using SAFETY-FIRST rules.
+                  ${SYSTEM_LOGIC}
+                  Message: "${text}"
+                  OUTPUT INSTRUCTIONS:
+                  1. Logic: Rule 1 -> Rule 5 strictly.
+                  2. Confidence: Use EXACT number. NEVER 95.
+                  3. Verdict: <40 SAFE, 40-84 CAUTION, >=85 DANGEROUS.
+                  4. Return JSON.
+                `;
+                const response = await ai.models.generateContent({
+                    model,
+                    contents: prompt,
+                    config: {
+                        temperature: 0.0,
+                        responseMimeType: "application/json",
+                        responseSchema: {
+                            type: "OBJECT",
+                            properties: {
+                                verdict: { type: "STRING", enum: ["SAFE", "CAUTION", "DANGEROUS"] },
+                                confidence: { type: "NUMBER" },
+                                detectedLanguage: { type: "STRING" },
+                                scamType: { type: "STRING" },
+                                redFlags: { type: "ARRAY", items: { type: "STRING" } },
+                                detailedAnalysis: {
+                                    type: "OBJECT",
+                                    properties: {
+                                        malayalam: { type: "STRING" },
+                                        manglish: { type: "STRING" },
+                                        english: { type: "STRING" }
+                                    }
+                                },
+                                actionableAdvice: { type: "ARRAY", items: { type: "STRING" } }
+                            }
+                        }
+                    }
+                });
+                const result = JSON.parse(response.text);
+                // Safety defaults for arrays/objects
+                result.redFlags = result.redFlags || [];
+                result.actionableAdvice = result.actionableAdvice || [];
+                result.detailedAnalysis = result.detailedAnalysis || {};
+                return result;
+            } catch (error) {
+                console.error(error);
+                return {
+                    verdict: "CAUTION",
+                    confidence: 50,
+                    detectedLanguage: "Unknown",
+                    scamType: "Analysis Failed",
+                    redFlags: ["Service Unavailable"],
+                    detailedAnalysis: { english: "Could not analyze. Check connection." },
+                    actionableAdvice: ["Try again later"]
+                };
+            }
+        }
+
+        async function analyzeUrl(url) {
+            try {
+                const model = "gemini-2.5-flash";
+                const prompt = `
+                  Analyze URL "${url}".
+                  SCORING: Typosquatting=91, Suspicious TLD=85, Shortener=75, Generic=55, Official=10.
+                  Return JSON.
+                `;
+                const response = await ai.models.generateContent({
+                    model,
+                    contents: prompt,
+                    config: {
+                        temperature: 0.0,
+                        responseMimeType: "application/json",
+                        responseSchema: {
+                            type: "OBJECT",
+                            properties: {
+                                verdict: { type: "STRING", enum: ["SAFE", "CAUTION", "DANGEROUS"] },
+                                threatScore: { type: "NUMBER" },
+                                findings: {
+                                    type: "ARRAY",
+                                    items: {
+                                        type: "OBJECT",
+                                        properties: {
+                                            label: { type: "STRING" },
+                                            status: { type: "STRING", enum: ["safe", "warning", "danger"] },
+                                            details: { type: "STRING" }
+                                        }
+                                    }
+                                },
+                                threatIndicators: { type: "ARRAY", items: { type: "STRING" } },
+                                summary: { type: "STRING" },
+                                actionableAdvice: { type: "ARRAY", items: { type: "STRING" } }
+                            }
+                        }
+                    }
+                });
+                const result = JSON.parse(response.text);
+                // Safety defaults
+                result.findings = result.findings || [];
+                result.threatIndicators = result.threatIndicators || [];
+                result.actionableAdvice = result.actionableAdvice || [];
+                return result;
+            } catch (error) {
+                console.error(error);
+                return {
+                    verdict: "CAUTION",
+                    threatScore: 50,
+                    findings: [],
+                    threatIndicators: ["Service Unavailable"],
+                    summary: "Analysis failed.",
+                    actionableAdvice: ["Try again"]
+                };
+            }
+        }
+
+        // ----------------------------------------------------------------------
+        // 3. COMPONENTS
+        // ----------------------------------------------------------------------
+
+        // Futuristic Background
+        const FuturisticBackground = () => {
+            return (
+                <div className="fixed inset-0 z-0 overflow-hidden pointer-events-none bg-brand-navy">
+                    <div className="absolute inset-0 bg-gradient-to-b from-[#020617] via-[#0f172a] to-[#1e293b]" />
+                    <div className="absolute inset-0 opacity-20" style={{
+                        backgroundImage: 'linear-gradient(rgba(59, 130, 246, 0.4) 1px, transparent 1px), linear-gradient(90deg, rgba(59, 130, 246, 0.4) 1px, transparent 1px)',
+                        backgroundSize: '40px 40px',
+                        width: '200vw', height: '200vh', left: '-50%', top: '-50%',
+                        transform: 'perspective(500px) rotateX(60deg)', animation: 'gridFlow 20s linear infinite'
+                    }} />
+                    <div className="absolute top-0 left-0 right-0 h-1/2 bg-gradient-to-b from-[#020617] to-transparent z-10" />
+                    <div className="absolute bottom-0 left-0 right-0 h-1/3 bg-gradient-to-t from-[#0f172a] via-[#0f172a]/80 to-transparent z-10" />
+                    <div className="absolute top-[20%] left-[20%] w-[600px] h-[600px] rounded-full bg-brand-primary opacity-[0.04] blur-[120px] animate-pulse-slow" />
+                </div>
+            );
+        };
+
+        // Ripple Button
+        const RippleButton = ({ children, className, variant = 'primary', onClick, disabled, ...props }) => {
+            const [ripples, setRipples] = React.useState([]);
+            const addRipple = (e) => {
+                const button = e.currentTarget;
+                const rect = button.getBoundingClientRect();
+                const size = Math.max(rect.width, rect.height);
+                const x = e.clientX - rect.left - size / 2;
+                const y = e.clientY - rect.top - size / 2;
+                const newRipple = { x, y, size, id: Date.now() };
+                setRipples((prev) => [...prev, newRipple]);
+                if (onClick) onClick(e);
+            };
+            React.useLayoutEffect(() => {
+                if (ripples.length > 0) {
+                    const timer = setTimeout(() => setRipples((prev) => prev.slice(1)), 600);
+                    return () => clearTimeout(timer);
+                }
+            }, [ripples]);
+            
+            const baseStyles = "relative overflow-hidden font-inter font-semibold transition-all duration-300 transform active:scale-[0.98] disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2";
+            const variants = {
+                primary: "bg-brand-primary text-white hover:bg-blue-600 shadow-lg shadow-brand-primary/20 hover:shadow-brand-primary/40",
+                secondary: "bg-white/10 text-white hover:bg-white/20 border border-white/10",
+                ghost: "bg-transparent text-gray-400 hover:text-white hover:bg-white/5"
+            };
+            return (
+                <button className={clsx(baseStyles, variants[variant], className)} onClick={addRipple} disabled={disabled} {...props}>
+                    {ripples.map((r) => (
+                        <span key={r.id} className="absolute bg-white/30 rounded-full animate-ripple pointer-events-none" style={{ top: r.y, left: r.x, width: r.size, height: r.size }} />
+                    ))}
+                    <span className="relative z-10 flex items-center gap-2">{children}</span>
+                </button>
+            );
+        };
+
+        // Header
+        const Header = ({ currentPage, setCurrentPage }) => {
+            const [isMenuOpen, setIsMenuOpen] = React.useState(false);
+            const navLinks = [
+                { name: 'Home', id: 'home' },
+                { name: 'Message Scan', id: 'message-scan' },
+                { name: 'URL Scan', id: 'url-scan' },
+                { name: 'Stats', id: 'stats' },
+                { name: 'About', id: 'about' },
+            ];
+            return (
+                <header className="sticky top-0 h-[70px] bg-brand-navy/90 backdrop-blur-md border-b border-white/5 z-50">
+                    <div className="container mx-auto h-full px-6 flex items-center justify-between">
+                        <div onClick={() => setCurrentPage('home')} className="flex items-center gap-3 cursor-pointer group">
+                            <Lucide.Shield className="w-7 h-7 text-brand-primary group-hover:scale-105 transition-transform" />
+                            <span className="font-orbitron text-xl font-bold text-gray-100 tracking-wide group-hover:text-white">AWARE AI</span>
+                        </div>
+                        <nav className="hidden md:flex items-center gap-8">
+                            {navLinks.map((link) => (
+                                <button key={link.id} onClick={() => setCurrentPage(link.id)} className={clsx("font-inter text-sm font-medium transition-colors", currentPage === link.id ? "text-brand-primary" : "text-gray-400 hover:text-white")}>
+                                    {link.name}
+                                </button>
+                            ))}
+                        </nav>
+                        <button className="md:hidden text-gray-400 hover:text-white" onClick={() => setIsMenuOpen(!isMenuOpen)}>
+                            {isMenuOpen ? <Lucide.X size={24} /> : <Lucide.Menu size={24} />}
+                        </button>
+                    </div>
+                    {isMenuOpen && (
+                        <div className="fixed inset-0 top-[70px] bg-brand-navy/98 backdrop-blur-xl z-40 flex flex-col items-center justify-center gap-8 animate-fade-in md:hidden">
+                            {navLinks.map((link) => (
+                                <button key={link.id} onClick={() => { setCurrentPage(link.id); setIsMenuOpen(false); }} className={clsx("font-orbitron text-xl font-bold", currentPage === link.id ? "text-brand-primary" : "text-gray-300")}>
+                                    {link.name}
+                                </button>
+                            ))}
+                        </div>
+                    )}
+                </header>
+            );
+        };
+
+        // Footer
+        const Footer = ({ setCurrentPage }) => (
+            <footer className="bg-neutral-offWhite border-t border-neutral-lightGreen pt-16 pb-8 mt-20 relative z-10">
+                <div className="container mx-auto px-6 text-center md:text-left">
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-12 mb-12">
+                        <div>
+                            <div className="flex items-center gap-2 justify-center md:justify-start mb-4">
+                                <Lucide.Shield className="text-brand-primary" size={24} />
+                                <span className="font-orbitron text-xl font-bold text-white">AWARE AI</span>
+                            </div>
+                            <p className="text-gray-400 text-sm">Kerala's Digital Scam Protection Platform.</p>
+                        </div>
+                        <div>
+                            <h4 className="font-orbitron text-white mb-6 text-lg font-bold">Quick Links</h4>
+                            <ul className="space-y-3 text-gray-400 text-sm">
+                                <li><button onClick={() => setCurrentPage('home')} className="hover:text-brand-primary">Home</button></li>
+                                <li><button onClick={() => setCurrentPage('message-scan')} className="hover:text-brand-primary">Message Scanner</button></li>
+                                <li><button onClick={() => setCurrentPage('stats')} className="hover:text-brand-primary">Statistics</button></li>
+                            </ul>
+                        </div>
+                        <div>
+                            <h4 className="font-orbitron text-white mb-6 text-lg font-bold">Legal</h4>
+                            <ul className="space-y-3 text-gray-400 text-sm">
+                                <li><button onClick={() => setCurrentPage('about')} className="hover:text-brand-primary">Privacy Policy</button></li>
+                                <li><button onClick={() => setCurrentPage('about')} className="hover:text-brand-primary">Terms of Service</button></li>
+                            </ul>
+                        </div>
+                    </div>
+                    <div className="border-t border-white/10 pt-8"><p className="text-gray-500 text-sm">© 2025 Aware AI • Protecting Kerala</p></div>
+                </div>
+            </footer>
+        );
+
+        // ----------------------------------------------------------------------
+        // 4. PAGES
+        // ----------------------------------------------------------------------
+
+        // Home Page
+        const Home = ({ setCurrentPage }) => {
+            const [text, setText] = React.useState('');
+            const [loopNum, setLoopNum] = React.useState(0);
+            const [isDeleting, setIsDeleting] = React.useState(false);
+            const messages = ["Protect Your Privacy", "AI-Powered Scam Detection", "Stay Safe Online"];
+            
+            React.useEffect(() => {
+                const handleTyping = () => {
+                    const i = loopNum % messages.length;
+                    const fullText = messages[i];
+                    setText(isDeleting ? fullText.substring(0, text.length - 1) : fullText.substring(0, text.length + 1));
+                    if (!isDeleting && text === fullText) setTimeout(() => setIsDeleting(true), 2500);
+                    else if (isDeleting && text === '') { setIsDeleting(false); setLoopNum(loopNum + 1); }
+                };
+                const timer = setTimeout(handleTyping, isDeleting ? 40 : 100);
+                return () => clearTimeout(timer);
+            }, [text, isDeleting, loopNum]);
+
+            return (
+                <div className="flex flex-col">
+                    <section className="min-h-[85vh] flex flex-col items-center justify-center px-6 py-20 relative">
+                        <div className="max-w-6xl mx-auto text-center animate-fade-in">
+                            <div className="mb-8 inline-flex items-center gap-2 bg-brand-primary/10 border border-brand-primary/30 rounded-full px-4 py-1.5 backdrop-blur-md">
+                                <span className="relative flex h-2.5 w-2.5"><span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-brand-primary opacity-75"></span><span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-brand-primary"></span></span>
+                                <span className="text-brand-primary text-xs font-mono font-bold tracking-widest">AI-POWERED PROTECTION</span>
+                            </div>
+                            <h1 className="font-orbitron font-black text-6xl md:text-8xl text-white mb-8">AWARE <span className="text-brand-primary">AI</span></h1>
+                            <div className="h-12 md:h-16 mb-8 flex items-center justify-center"><p className="font-inter text-xl md:text-2xl text-transparent bg-clip-text bg-gradient-to-r from-gray-100 to-gray-400 font-light tracking-wide border-r-2 border-brand-accent pr-1 animate-pulse">{text}</p></div>
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-8 max-w-4xl mx-auto mt-12">
+                                <div onClick={() => setCurrentPage('message-scan')} className="glass-card p-10 cursor-pointer hover:-translate-y-2 group relative overflow-hidden border-white/5 hover:border-brand-primary/40">
+                                    <div className="mb-8 relative z-10 p-5 bg-brand-navy rounded-2xl border border-white/10 shadow-xl"><span className="text-4xl">📱</span></div>
+                                    <h2 className="font-orbitron text-2xl font-bold text-white mb-4 group-hover:text-brand-primary transition-colors">MESSAGE SCANNER</h2>
+                                    <p className="font-inter text-gray-400 text-sm mb-10">Detect scam SMS & WhatsApp messages.</p>
+                                    <RippleButton className="w-full py-3.5 rounded-full bg-white/5 border border-white/10 hover:bg-brand-primary">Scan Message <Lucide.ArrowRight size={16} /></RippleButton>
+                                </div>
+                                <div onClick={() => setCurrentPage('url-scan')} className="glass-card p-10 cursor-pointer hover:-translate-y-2 group relative overflow-hidden border-white/5 hover:border-brand-accent/40">
+                                    <div className="mb-8 relative z-10 p-5 bg-brand-navy rounded-2xl border border-white/10 shadow-xl"><span className="text-4xl">🔗</span></div>
+                                    <h2 className="font-orbitron text-2xl font-bold text-white mb-4 group-hover:text-brand-accent transition-colors">URL SCANNER</h2>
+                                    <p className="font-inter text-gray-400 text-sm mb-10">Check suspicious links & websites.</p>
+                                    <RippleButton className="w-full py-3.5 rounded-full bg-white/5 border border-white/10 hover:bg-brand-accent">Scan URL <Lucide.ArrowRight size={16} /></RippleButton>
+                                </div>
+                            </div>
+                        </div>
+                    </section>
+                </div>
+            );
+        };
+
+        // Message Scanner
+        const MessageScanner = () => {
+            const [text, setText] = React.useState('');
+            const [loading, setLoading] = React.useState(false);
+            const [result, setResult] = React.useState(null);
+            const [error, setError] = React.useState(null);
+            const resultsRef = React.useRef(null);
+
+            const handleScan = async () => {
+                if (!text.trim() || text.length < 10) { setError("Please enter a valid message."); return; }
+                setLoading(true); setResult(null); setError(null);
+                const res = await analyzeMessage(text.trim());
+                setResult(res); setLoading(false);
+                setTimeout(() => resultsRef.current?.scrollIntoView({ behavior: 'smooth' }), 100);
+            };
+
+            return (
+                <div className="container mx-auto px-4 py-12 max-w-4xl">
+                    <div className="text-center mb-12 animate-fade-in">
+                        <h1 className="font-orbitron text-3xl font-bold text-white mb-2">MESSAGE SCANNER</h1>
+                        <p className="text-gray-400 font-inter">Analyze suspicious messages instantly</p>
+                    </div>
+                    <div className="glass-card p-8 mb-10 animate-fade-in">
+                        <div className="relative group rounded-xl mt-6">
+                            <textarea value={text} onChange={(e) => setText(e.target.value)} placeholder=" " className="glass-input w-full h-48 rounded-xl p-6 text-white font-inter resize-none text-base peer pt-6" />
+                            <label className="glass-label absolute left-6 top-6 text-gray-500 z-20">Paste suspicious content here...</label>
+                            {text && <button onClick={() => setText('')} className="absolute top-4 right-4 text-gray-500"><Lucide.XCircle size={18} /></button>}
+                            {loading && <div className="absolute inset-0 z-10 bg-brand-navy/50 backdrop-blur-[2px] flex items-center justify-center"><span className="font-orbitron font-bold text-white animate-pulse">ANALYZING...</span></div>}
+                        </div>
+                        {error && <div className="text-status-danger text-sm mt-2 text-center">{error}</div>}
+                        <div className="mt-8">
+                            <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mb-8">
+                                {Object.entries(SAMPLE_MESSAGES).map(([key, msg]) => (
+                                    <RippleButton key={key} variant="secondary" onClick={() => setText(msg)} className="text-xs py-2.5">{key}</RippleButton>
+                                ))}
+                            </div>
+                            <RippleButton onClick={handleScan} disabled={loading} className="w-full py-4 text-lg rounded-xl font-orbitron font-bold">{loading ? 'PROCESSING...' : 'ANALYZE MESSAGE'}</RippleButton>
+                        </div>
+                    </div>
+                    {result && (
+                        <div ref={resultsRef} className="space-y-6 animate-slide-up">
+                            <div className={clsx("glass-card p-8 text-center border-l-4 shadow-xl relative overflow-hidden", result.verdict === 'SAFE' ? 'text-status-success border-status-success' : result.verdict === 'DANGEROUS' ? 'text-status-danger border-status-danger' : 'text-status-warning border-status-warning')}>
+                                <Lucide.ShieldCheck size={64} className="mb-4 mx-auto" />
+                                <h2 className="font-orbitron text-4xl font-bold mb-2 text-white">{result.verdict}</h2>
+                                <div className="text-white font-mono">Confidence: {result.confidence}%</div>
+                            </div>
+                            <div className="glass-card p-8">
+                                <h3 className="font-orbitron text-xs font-bold text-gray-400 mb-6 uppercase">AI Analysis</h3>
+                                <div className="space-y-4 text-sm">
+                                    {['malayalam', 'manglish', 'english'].map(lang => (
+                                        <div key={lang} className="bg-brand-navy/40 p-5 rounded-xl border border-white/5">
+                                            <h4 className="font-bold text-white mb-2 text-xs uppercase text-brand-primary">{lang}</h4>
+                                            <p className="text-gray-300">{result.detailedAnalysis?.[lang]}</p>
+                                        </div>
+                                    ))}
+                                </div>
+                            </div>
+                        </div>
+                    )}
+                </div>
+            );
+        };
+
+        // URL Scanner
+        const UrlScanner = () => {
+            const [url, setUrl] = React.useState('');
+            const [loading, setLoading] = React.useState(false);
+            const [result, setResult] = React.useState(null);
+            const resultsRef = React.useRef(null);
+
+            const handleScan = async () => {
+                if (!url.trim()) return;
+                setLoading(true); setResult(null);
+                const res = await analyzeUrl(url);
+                setResult(res); setLoading(false);
+                setTimeout(() => resultsRef.current?.scrollIntoView({ behavior: 'smooth' }), 100);
+            };
+
+            return (
+                <div className="container mx-auto px-4 py-12 max-w-4xl">
+                    <div className="text-center mb-12 animate-fade-in">
+                        <h1 className="font-orbitron text-3xl font-bold text-white mb-2">URL SCANNER</h1>
+                    </div>
+                    <div className="glass-card p-8 mb-10 animate-fade-in">
+                        <div className="relative mt-8 mb-8 group rounded-xl">
+                            <Lucide.Globe className="absolute left-4 top-1/2 -translate-y-1/2 text-brand-accent" size={20} />
+                            <input value={url} onChange={(e) => setUrl(e.target.value)} placeholder=" " className="glass-input w-full rounded-xl py-4 pl-12 pr-12 text-white font-mono text-base" />
+                            <label className="glass-label absolute left-12 top-4 text-gray-500">Enter URL...</label>
+                        </div>
+                        <div className="flex flex-wrap gap-3 mb-8">
+                            {Object.entries(SAMPLE_URLS).map(([key, u]) => (
+                                <RippleButton key={key} variant="secondary" onClick={() => setUrl(u)} className="text-xs">{key}</RippleButton>
+                            ))}
+                        </div>
+                        <RippleButton onClick={handleScan} disabled={loading} className="w-full py-4 text-lg rounded-xl bg-brand-accent hover:bg-cyan-400">{loading ? 'SCANNING...' : 'SCAN URL'}</RippleButton>
+                    </div>
+                    {result && (
+                        <div ref={resultsRef} className="glass-card p-8 animate-slide-up">
+                            <h2 className="font-orbitron text-xl text-gray-300 mb-6 flex items-center justify-center gap-2"><Lucide.ShieldAlert size={20} /> Analysis</h2>
+                            <div className="text-center mb-6">
+                                <div className={clsx("font-orbitron text-4xl font-bold mb-3", result.verdict === 'SAFE' ? 'text-status-success' : 'text-status-danger')}>{result.verdict}</div>
+                                <p className="text-gray-400 text-sm">{result.summary}</p>
+                            </div>
+                        </div>
+                    )}
+                </div>
+            );
+        };
+
+        // Stats Page
+        const Stats = () => (
+            <div className="container mx-auto px-4 py-12">
+                <div className="text-center mb-12 animate-fade-in"><h1 className="font-orbitron text-4xl font-bold text-white">LIVE STATISTICS</h1></div>
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-12">
+                    {[
+                        { label: 'Total Scans', value: '15,234', icon: Lucide.Activity, color: 'text-brand-primary' },
+                        { label: 'Threats Blocked', value: '3,456', icon: Lucide.Shield, color: 'text-status-danger' }
+                    ].map((stat, idx) => (
+                        <div key={idx} className="glass-card p-6 flex flex-col items-center justify-center text-center">
+                            <div className="p-4 rounded-full mb-4 bg-white/5"><stat.icon className={`w-8 h-8 ${stat.color}`} /></div>
+                            <h3 className="font-orbitron text-3xl font-bold text-white mb-1">{stat.value}</h3>
+                            <p className="text-gray-400 text-sm font-medium">{stat.label}</p>
+                        </div>
+                    ))}
+                </div>
+                <div className="glass-card p-6 h-[300px]">
+                    <h3 className="font-orbitron text-sm font-bold text-white mb-6">THREAT LEVELS</h3>
+                    <Recharts.ResponsiveContainer width="100%" height="100%">
+                        <Recharts.BarChart data={[{ name: 'Danger', value: 2345 }, { name: 'Caution', value: 1234 }, { name: 'Safe', value: 6543 }]}>
+                            <Recharts.XAxis dataKey="name" stroke="#BDBDBD" />
+                            <Recharts.YAxis stroke="#BDBDBD" />
+                            <Recharts.Tooltip contentStyle={{ backgroundColor: '#1e293b', border: 'none' }} />
+                            <Recharts.Bar dataKey="value" fill="#3b82f6" />
+                        </Recharts.BarChart>
+                    </Recharts.ResponsiveContainer>
+                </div>
+            </div>
+        );
+
+        // About Page
+        const About = () => (
+            <div className="container mx-auto px-4 py-12 max-w-4xl animate-fade-in">
+                <div className="glass-card p-10 mb-8">
+                    <h2 className="font-orbitron text-2xl text-white mb-4 font-bold">Mission</h2>
+                    <p className="text-gray-300 text-lg">Aware AI provides free, instant scam detection using advanced artificial intelligence to protect Kerala citizens from digital fraud.</p>
+                </div>
+                <div className="glass-card p-10">
+                    <h2 className="font-orbitron text-2xl text-white mb-4 font-bold">Privacy Policy</h2>
+                    <p className="text-gray-400 text-sm">We do not permanently store message content. Analysis occurs in real-time and data is discarded immediately after.</p>
+                </div>
+            </div>
+        );
+
+        // ----------------------------------------------------------------------
+        // 5. MAIN APP COMPONENT
+        // ----------------------------------------------------------------------
+        const App = () => {
+            const [currentPage, setCurrentPage] = React.useState('home');
+
+            const renderPage = () => {
+                switch (currentPage) {
+                    case 'home': return <Home setCurrentPage={setCurrentPage} />;
+                    case 'message-scan': return <MessageScanner />;
+                    case 'url-scan': return <UrlScanner />;
+                    case 'stats': return <Stats />;
+                    case 'about': return <About />;
+                    case 'faq': return <div className="container mx-auto px-4 py-12 text-center text-white">Coming Soon</div>; // Fallback
+                    default: return <Home setCurrentPage={setCurrentPage} />;
+                }
+            };
+
+            return (
+                <div className="min-h-screen flex flex-col text-white relative overflow-hidden font-inter selection:bg-brand-primary selection:text-white">
+                    <FuturisticBackground />
+                    <div className="relative z-20"><Header currentPage={currentPage} setCurrentPage={setCurrentPage} /></div>
+                    <main className="flex-grow relative z-10 px-4 sm:px-0">{renderPage()}</main>
+                    <div className="relative z-10"><Footer setCurrentPage={setCurrentPage} /></div>
+                </div>
+            );
+        };
+
+        const root = ReactDOM.createRoot(document.getElementById('root'));
+        root.render(<React.StrictMode><App /></React.StrictMode>);
+    </script>
+</body>
+</html>
